@@ -1,4 +1,4 @@
-# Chess-with-Stockfish
+# Chess-with-Stockfish-advice
 
 화면을 감지하는게 아닌 css에서 기보를 따와서 수를 추천하기 때문에 invisible 체스에도 활용 가능
 960 변형체스 True False, Elo 등의 설정을 하고싶다면 json 파일에서 바꾸기
