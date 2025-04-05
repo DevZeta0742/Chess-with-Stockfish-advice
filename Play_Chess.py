@@ -10,7 +10,7 @@ with open('stockfish_config.json', 'r') as f:
     config = json.load(f)
 
 stockfish = Stockfish(
-    path = r"C:\Users\stockfish\stockfish-windows-x86-64-avx2.exe",
+    path = r" ",  # you should  fill this blank with path to the stockfish.exe you downloaded ( r"C:\ ~ ~ ~ .exe"
     depth = 18,
     parameters = {"Threads": 2, "Minimum Thinking Time": 30}
 )
@@ -18,7 +18,6 @@ stockfish = Stockfish(
 stockfish.update_engine_parameters(config)
 
 chrome_options = webdriver.ChromeOptions()
-# chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(options = chrome_options)
 driver.get("https://www.chess.com/live")
 
@@ -29,7 +28,9 @@ def get_chess_moves():
     moves = [m.text.strip() for m in move_elements if m.text.strip()]
     return moves
 
-def convert_san_to_uci(san_moves):  # 이거 없으면 기보 못 읽어옴
+
+def convert_san_to_uci(san_moves):
+    """SAN(Standard Algebraic Notation) 이동을 UCI 형식으로 변환"""
     board = chess.Board()
     uci_moves = []
 
@@ -38,9 +39,79 @@ def convert_san_to_uci(san_moves):  # 이거 없으면 기보 못 읽어옴
             move = board.parse_san(san)
             uci_moves.append(move.uci())
             board.push(move)
+
         except Exception as e:
-            print(f"failed to parse: {san} — {e}")
-            continue
+            if len(san) == 2 and san[0] in 'abcdefgh' and san[1] in '12345678':
+                target_square = chess.parse_square(san)
+                possible_moves = []
+
+                for move in board.legal_moves:
+                    if move.to_square == target_square:
+                        possible_moves.append(move)
+
+                if len(possible_moves) == 1:
+                    uci_moves.append(possible_moves[0].uci())
+                    board.push(possible_moves[0])
+                    print(f"success: {san} → {possible_moves[0].uci()}")
+                    continue
+
+                else:
+                    print(f"ambiguous move: {san} - multiple pieces can move or move is not possible")
+
+            elif san in ['O-O', '0-0']:
+                if board.turn == chess.WHITE:
+                    move = chess.Move.from_uci('e1g1')
+
+                else:
+                    move = chess.Move.from_uci('e8g8')
+
+                if move in board.legal_moves:
+                    uci_moves.append(move.uci())
+                    board.push(move)
+                    print(f"kingside castling: {san}")
+
+                    continue
+
+                else:
+                    print(f"this kingside castling is illegal: {san}")
+
+            elif san in ['O-O-O', '0-0-0']:
+                if board.turn == chess.WHITE:
+                    move = chess.Move.from_uci('e1c1')
+
+                else:
+                    move = chess.Move.from_uci('e8c8')
+
+                if move in board.legal_moves:
+                    uci_moves.append(move.uci())
+                    board.push(move)
+                    print(f"queenside castling: {san}")
+
+                    continue
+
+                else:
+                    print(f"this queenside castling is illegal: {san}")
+
+            elif san.startswith('x') and len(san) == 3:
+                target_square = chess.parse_square(san[1:3])
+                capture_moves = []
+
+                for move in board.legal_moves:
+                    if move.to_square == target_square and board.is_capture(move):
+                        capture_moves.append(move)
+
+                if len(capture_moves) == 1:
+                    uci_moves.append(capture_moves[0].uci())
+                    board.push(capture_moves[0])
+                    print(f"success: {san} → {capture_moves[0].uci()}")
+
+                    continue
+
+                else:
+                    print(f"ambiguous capture move: {san}")
+
+            else:
+                print(f"failed to parse: {san} — {e}")
 
     return uci_moves
 
@@ -53,7 +124,7 @@ def main():
         moves = get_chess_moves()
 
         if not moves or moves == prev_moves:
-            time.sleep(2)
+            time.sleep(1)
             continue
 
         prev_moves = moves.copy()
