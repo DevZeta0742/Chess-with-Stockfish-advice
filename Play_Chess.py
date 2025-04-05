@@ -10,7 +10,7 @@ with open('stockfish_config.json', 'r') as f:
     config = json.load(f)
 
 stockfish = Stockfish(
-    path = r"stockfish exe 경로 삽입",
+    path = r"C:\Users\stockfish\stockfish-windows-x86-64-avx2.exe",
     depth = 18,
     parameters = {"Threads": 2, "Minimum Thinking Time": 30}
 )
@@ -29,7 +29,7 @@ def get_chess_moves():
     moves = [m.text.strip() for m in move_elements if m.text.strip()]
     return moves
 
-def convert_san_to_uci(san_moves):  # 이거 없으면 기보 못읽어옴
+def convert_san_to_uci(san_moves):  # 이거 없으면 기보 못 읽어옴
     board = chess.Board()
     uci_moves = []
 
@@ -38,12 +38,12 @@ def convert_san_to_uci(san_moves):  # 이거 없으면 기보 못읽어옴
             move = board.parse_san(san)
             uci_moves.append(move.uci())
             board.push(move)
-
         except Exception as e:
-            print(f"failed: {san} - {e}")
-            break
+            print(f"failed to parse: {san} — {e}")
+            continue
 
     return uci_moves
+
 
 def main():
     print("Stockfish recommendation sys on")
