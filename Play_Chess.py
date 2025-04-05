@@ -32,6 +32,10 @@ def get_chess_moves():
 def convert_san_to_uci(san_moves):
     """SAN(Standard Algebraic Notation) 이동을 UCI 형식으로 변환"""
     board = chess.Board()
+
+    if len(san_moves) % 2 != 0:
+    board.turn = chess.WHITE
+
     uci_moves = []
 
     for san in san_moves:
