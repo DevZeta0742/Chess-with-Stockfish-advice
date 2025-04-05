@@ -10,7 +10,7 @@ with open('stockfish_config.json', 'r') as f:
     config = json.load(f)
 
 stockfish = Stockfish(
-    path = r"C:\Users\stockfish\stockfish-windows-x86-64-avx2.exe",
+    path = r"stockfish exe 경로 삽입",
     depth = 18,
     parameters = {"Threads": 2, "Minimum Thinking Time": 30}
 )
