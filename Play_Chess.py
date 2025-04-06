@@ -1,28 +1,26 @@
 from stockfish import Stockfish
-from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import undetected_chromedriver as uc
 import chess
 import json
 import time
-
+import os
 
 with open('stockfish_config.json', 'r') as f:
     config = json.load(f)
 
 stockfish = Stockfish(
-    path = r" ",  # you should  fill this blank with path to the stockfish.exe you downloaded ( r"C:\ ~ ~ ~ .exe"
+    path = r" ",  # you should  fill this blank with path to the stockfish.exe you downloaded ( r"C:\ ~ ~ ~ .exe )"
     depth = 18,
     parameters = {"Threads": 2, "Minimum Thinking Time": 30}
 )
 
 stockfish.update_engine_parameters(config)
 
-chrome_options = webdriver.ChromeOptions()
-driver = webdriver.Chrome(options = chrome_options)
-driver.get("https://www.chess.com/live")
 
-
-def get_chess_moves():
+def get_chess_moves(driver):
     """Chess.com의 현재 기보를 가져와서 리스트로 반환"""
     move_elements = driver.find_elements(By.CSS_SELECTOR, "span.node-highlight-content")
     moves = [m.text.strip() for m in move_elements if m.text.strip()]
@@ -34,7 +32,7 @@ def convert_san_to_uci(san_moves):
     board = chess.Board()
 
     if len(san_moves) % 2 != 0:
-    board.turn = chess.WHITE
+        board.turn = chess.WHITE
 
     uci_moves = []
 
@@ -121,14 +119,34 @@ def convert_san_to_uci(san_moves):
 
 
 def main():
+    options = uc.ChromeOptions()
+
+    user_data_dir = os.path.join(os.getcwd(), "chess_profile")
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--start-maximized")
+
+    driver = uc.Chrome(options=options)
+
+    driver.execute_script("""
+           Object.defineProperty(navigator, 'webdriver', {
+               get: () => undefined
+           });
+           """)
+
+    driver.get("https://www.chess.com/live")
+
     print("Stockfish recommendation sys on")
     prev_moves = []
 
     while True:
-        moves = get_chess_moves()
+        moves = get_chess_moves(driver)
 
         if not moves or moves == prev_moves:
-            time.sleep(1)
+            time.sleep(0.3)
             continue
 
         prev_moves = moves.copy()
