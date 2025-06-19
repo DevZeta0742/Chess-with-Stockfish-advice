@@ -1,4 +1,4 @@
-# Stockfish Chesssing
+# Stockfish Chessing
 
 invisible 체스에도 활용 가능
 
