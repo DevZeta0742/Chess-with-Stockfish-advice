@@ -1,0 +1,4 @@
+stockfish
+selenium
+undetected-chromedriver
+python-chess
