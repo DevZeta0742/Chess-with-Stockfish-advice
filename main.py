@@ -12,7 +12,7 @@ def main():
 
     try:
         engine = EngineHandler(
-            path=r"",
+            path=r" ", # you should  fill this blank with path to the stockfish.exe you downloaded ( r"C:\ ~ ~ ~ .exe )"
             parameters={"Threads": 3, "Minimum Thinking Time": 30}
         )
         engine.update_parameters(config)
